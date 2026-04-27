@@ -121,7 +121,13 @@ function callInferenceServer(audioB64, filename) {
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => {
-        try { resolve(JSON.parse(data)); }
+        try {
+          if (res.statusCode < 200 || res.statusCode >= 300) {
+            reject(new Error(`Inference server returned ${res.statusCode}: ${data}`));
+            return;
+          }
+          resolve(JSON.parse(data));
+        }
         catch (e) { reject(new Error('Invalid JSON from inference server')); }
       });
     });
@@ -131,6 +137,7 @@ function callInferenceServer(audioB64, filename) {
     req.end();
   });
 }
+
 
 // ── Netlify function handler ──────────────────────────────────────────────────
 

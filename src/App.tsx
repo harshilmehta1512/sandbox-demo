@@ -2,7 +2,7 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   Upload, Music2, ShieldAlert, ShieldCheck, AlertTriangle,
   CheckCircle2, Cpu, RotateCcw, Lock, Activity, Layers,
-  Clock, Zap, ChevronRight, TrendingUp, Wand2, Play, Sun, Moon, ArrowLeft,
+  Clock, Zap, TrendingUp, Sun, Moon, ArrowLeft,
 } from 'lucide-react';
 
 // ── Brand logo component ───────────────────────────────────────────────────────
@@ -65,34 +65,6 @@ const PROTECTED_ARTISTS = [
   { name:'Beyoncé',      registryId:'UMG-REG-5503' },
 ];
 
-// ── Pre-loaded demo tracks ────────────────────────────────────────────────────
-
-const DEMO_TRACKS = [
-  {
-    id:       'suno_generated_pop.mp3',
-    label:    'AI Pop Track',
-    desc:     'Suno v3.5 generated pop song',
-    icon:     <Wand2 className="w-5 h-5" />,
-    tag:      'AI',
-    tagColor: 'destructive' as const,
-  },
-  {
-    id:       'indie_folk_recording.mp3',
-    label:    'Indie Folk Recording',
-    desc:     'Live studio session, 2024',
-    icon:     <Music2 className="w-5 h-5" />,
-    tag:      'REAL',
-    tagColor: 'success' as const,
-  },
-  {
-    id:       'udio_hiphop_beat.mp3',
-    label:    'Hip-Hop Beat',
-    desc:     'AI-generated instrumental',
-    icon:     <Play className="w-5 h-5" />,
-    tag:      'AI',
-    tagColor: 'destructive' as const,
-  },
-];
 
 // ── Mock inference ────────────────────────────────────────────────────────────
 
@@ -299,11 +271,7 @@ function UploadView({ onFile, darkMode, onToggleTheme }: { onFile:(f:File)=>void
     const f=e.dataTransfer.files[0]; if(f) onFile(f);
   },[onFile]);
 
-  const useDemoTrack=(trackId:string)=>{
-    const f=new File([new Uint8Array(1024)],'',{type:'audio/mpeg'});
-    Object.defineProperty(f,'name',{value:trackId});
-    onFile(f);
-  };
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -352,36 +320,6 @@ function UploadView({ onFile, darkMode, onToggleTheme }: { onFile:(f:File)=>void
               <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mt-1">{s.sub}</div>
             </Card>
           ))}
-        </div>
-
-        {/* ── Demo tracks ── */}
-        <div className="mb-10">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-[0.2em]">Try a pre-loaded example</div>
-            <div className="flex-1 h-px bg-border/60"/>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {DEMO_TRACKS.map(t=>(
-              <Card key={t.id}
-                className="bg-card border border-border/60 hover:border-[#6c47ff]/40 hover:bg-[#6c47ff]/5 transition-all cursor-pointer group"
-                onClick={()=>useDemoTrack(t.id)}
-              >
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0 group-hover:bg-[#6c47ff]/20 transition-colors text-muted-foreground group-hover:text-[#6c47ff]">
-                    {t.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className="text-sm font-semibold text-foreground truncate">{t.label}</span>
-                      <Badge variant={t.tagColor} className="text-[9px] px-1.5 py-0 font-mono flex-shrink-0">{t.tag}</Badge>
-                    </div>
-                    <div className="text-[11px] text-muted-foreground truncate">{t.desc}</div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-[#6c47ff] transition-colors flex-shrink-0"/>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
         </div>
 
         {/* ── Upload zone ── */}
