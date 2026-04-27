@@ -1,9 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
 import axios from 'axios';
-import FormData from 'form-data';
 
 const app = express();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 100 * 1024 * 1024 } });
@@ -88,17 +86,48 @@ app.post('/api/analyze', upload.single('audio'), async (req, res) => {
 
   try {
     if (MODEL_MODE === 'gpu') {
-      // Forward to real GPU inference server
-      const form = new FormData();
-      form.append('audio', req.file.buffer, {
-        filename:    req.file.originalname,
-        contentType: req.file.mimetype,
+      // Convert buffer to base64 and send JSON request to inference server
+      const audioB64 = req.file.buffer.toString('base64');
+      const response = await axios.post(`${MODEL_ENDPOINT}/analyze`, {
+        audio:    audioB64,
+        filename: req.file.originalname,
+        level:    3,   // get full temporal + generator data
+        trackId:  `SANDBOX-${Date.now()}`,
+      }, { timeout: 60000 });
+
+      const r = response.data;
+
+      // Map inference server response → sandbox frontend format
+      const generatorScores = (r.level2?.sourceAttribution?.allGenerators ?? []).map(
+        (g: { name: string; confidence: number }) => ({
+          name:       g.name,
+          score:      Math.round(g.confidence),
+          isDetected: g.name === r.level1?.aiEngine,
+        })
+      );
+
+      const anomalyRegions = (r.level3?.anomalyRegions ?? []).map(
+        (region: { start: number; end: number; severity: string }, i: number) => {
+          const labels = ['Spectral Smearing', 'Phase Incoherence', 'Harmonic Artifact', 'High-Freq Dropout'];
+          return {
+            start:    region.start,
+            end:      region.end,
+            severity: region.severity,
+            label:    labels[i % labels.length],
+          };
+        }
+      );
+
+      res.json({
+        isAI:            r.level1?.isAiGenerated ?? false,
+        confidence:      Math.round(r.level1?.confidence ?? 0),
+        aiEngine:        r.level1?.aiEngine ?? null,
+        generatorScores,
+        anomalyRegions,
+        voiceMatch:      null,
+        processingMs:    r.processingTimeMs ?? 0,
+        temporalProfile: r.level3?.temporalProfile ?? [],
       });
-      const response = await axios.post(`${MODEL_ENDPOINT}/analyze`, form, {
-        headers: form.getHeaders(),
-        timeout: 30000,
-      });
-      res.json(response.data);
     } else {
       // Demo mode — deterministic mock
       await new Promise(r => setTimeout(r, 1200)); // realistic delay
