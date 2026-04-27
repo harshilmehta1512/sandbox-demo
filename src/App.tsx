@@ -7,7 +7,7 @@ import {
 
 // ── Brand logo component ───────────────────────────────────────────────────────
 function BrandLogo({ size = 'md', darkMode = true }: { size?: 'sm' | 'md'; darkMode?: boolean }) {
-  const logoH = size === 'sm' ? 'h-10' : 'h-12';
+  const logoH = size === 'sm' ? 'h-6' : 'h-8';
   return (
     <div className="flex items-center">
       <img
@@ -815,6 +815,10 @@ export default function App() {
   const toggleTheme = useCallback(() => setDarkMode(d => !d), []);
 
   const handleFile=useCallback(async(file:File)=>{
+    if(file.size > 4*1024*1024){
+      alert('File too large. Please upload a file under 4MB for best results.');
+      return;
+    }
     setFilename(file.name);
     setAudioFile(file);
     setState('analyzing');

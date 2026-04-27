@@ -6,6 +6,9 @@
 [functions]
   directory = "netlify/functions"
 
+[functions."analyze"]
+  max_body_size = 6291456
+
 [[redirects]]
   from   = "/api/analyze"
   to     = "/.netlify/functions/analyze"
