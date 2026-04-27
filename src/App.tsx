@@ -7,7 +7,7 @@ import {
 
 // ── Brand logo component ───────────────────────────────────────────────────────
 function BrandLogo({ size = 'md', darkMode = true }: { size?: 'sm' | 'md'; darkMode?: boolean }) {
-  const logoH = size === 'sm' ? 'h-6' : 'h-8';
+  const logoH = size === 'sm' ? 'h-10' : 'h-12';
   return (
     <div className="flex items-center">
       <img
